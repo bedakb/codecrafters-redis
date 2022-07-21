@@ -36,12 +36,12 @@ func ListenAndServe(addr string) error {
 }
 
 func (s *Server) handleConn(conn net.Conn) {
-	defer conn.Close()
 	defer func() {
 		if r := recover(); r != nil {
 			log.Println("panic:", r)
 		}
-	}()
+	}()	
+	defer conn.Close()
 	for {
 		buf := make([]byte, 1024)
 		n, err := conn.Read(buf)

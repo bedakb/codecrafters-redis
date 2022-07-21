@@ -17,7 +17,7 @@ type entry struct {
 // in the memory and removed once accessed, in case the key expired.
 type Store struct {
 	values map[string]entry
-	mu     sync.RWMutex
+	mu     sync.Mutex
 }
 
 // New creates a new instance of Store.
@@ -29,9 +29,9 @@ func New() *Store {
 
 // Get returns the actual value for the given key and value indicating the existence.
 func (s *Store) Get(key string) (string, bool) {
-	s.mu.RLock()
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	v, ok := s.values[key]
-	s.mu.RUnlock()
 	if ok && !v.ts.IsZero() {
 		if v.ts.Before(time.Now()) {
 			delete(s.values, key)
@@ -62,7 +62,7 @@ func (s *Store) SetWithExpirity(key, value string, expirity time.Duration) {
 
 // Len returns length of the store.
 func (s *Store) Len() int {
-	s.mu.RLock()
-	defer s.mu.RUnlock()
+	s.mu.Lock()
+	defer s.mu.Lock()
 	return len(s.values)
 }
